@@ -1,3 +1,0 @@
-/home/oleh/kpi/cv/lab1/cv_lab1/lab1/build/CMakeFiles/rebuild_cache.dir
-/home/oleh/kpi/cv/lab1/cv_lab1/lab1/build/CMakeFiles/lab1.dir
-/home/oleh/kpi/cv/lab1/cv_lab1/lab1/build/CMakeFiles/edit_cache.dir
