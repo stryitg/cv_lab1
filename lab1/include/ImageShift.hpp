@@ -18,6 +18,10 @@ public:
         cv::Mat right_image;
         std::function<float(cv::Vec3b, cv::Vec3b)> loss;
         std::function<float(Shift, Shift)> smoothing;
+        int32_t max_shift_x;
+        int32_t min_shift_x;
+        int32_t max_shift_y;
+        int32_t min_shift_y;
     };
     
     ImageShift(const Options& options);
@@ -42,15 +46,22 @@ private:
     std::vector<Shift> GetShifts(const NodesMap& nodes) const;
     cv::Mat ToMat(const Shifts& shifts) const;
 private:
-    static constexpr size_t kMaxShiftX = 50;
-    static constexpr size_t kMaxShiftY = 10;
+    static constexpr uint32_t kThreadsCount = 4;
     
-    // std::vector<>
-    
+    const int32_t kMaxShiftY;
+    const int32_t kMinShiftY;
+    const size_t kDiffY;
+    const int32_t kMaxShiftX;
+    const int32_t kMinShiftX;
+    const size_t kDiffX;
+
     cv::Mat _left_image;
     cv::Mat _right_image;
+    size_t _init_row;
+    size_t _rows;
+    size_t _init_col;
+    size_t _cols;
     
     std::function<float(cv::Vec3b, cv::Vec3b)> _loss;
-    
     Smoothing _smoothing_yxyx;
 };

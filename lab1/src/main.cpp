@@ -19,17 +19,21 @@ struct Args {
     float beta_smoothing_param;
 };
 
-void ParseCommandLine(int argc, char** argv, ImageShift::Options& options);
+void ParseCommandLine(int argc, char** argv, ImageShift::Options& options, std::string& out);
 
 int main(int argc, char** argv) {
     try {
         ImageShift::Options options;
-        ParseCommandLine(argc, argv, options);
+        std::string out_path;
+        ParseCommandLine(argc, argv, options, out_path);
         ImageShift image_shift(options);
         const auto shift_map = image_shift.GetShift();
         cv::namedWindow("Display window", cv::WINDOW_AUTOSIZE);
         cv::imshow("Display window", shift_map);
         cv::waitKey(0);
+        if(!out_path.empty()) {
+            cv::imwrite(out_path, shift_map);
+        }
     } catch (const std::exception& ex) {
         std::cout << ex.what() << std::endl;
         return 1;
@@ -39,7 +43,7 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-void ParseCommandLine(int argc, char** argv, ImageShift::Options& options) {
+void ParseCommandLine(int argc, char** argv, ImageShift::Options& options, std::string& out) {
     Args args;
     
     po::options_description desc("Options");
@@ -50,6 +54,11 @@ void ParseCommandLine(int argc, char** argv, ImageShift::Options& options) {
         ("smoothing-func", po::value<std::string>(&args.smoothing_func)->required(), "loss function type (L1, beta-L1)")
         ("alpha-smoothing-param", po::value<float>(&args.alpha_smoothing_param)->required(), "alpha smothing parameter")
         ("beta-smoothing-param", po::value<float>()->default_value(1.0), "beta smoothing param for beta-L1 smoothing function")
+        ("max-shift-x", po::value<int32_t>(&options.max_shift_x)->required(), "max shift in x direction")
+        ("min-shift-x", po::value<int32_t>(&options.min_shift_x)->default_value(0), "min shift in x direction")
+        ("max-shift-y", po::value<int32_t>(&options.max_shift_y)->required(), "max shift in y direction")
+        ("min-shift-y", po::value<int32_t>(&options.min_shift_y)->default_value(0), "min shift in y direction")
+        ("out", po::value<std::string>(&out)->default_value(""), "path to save output image; don't provide for not saving")
         ("help", "produces help message")
     ;
     po::variables_map vm;
@@ -70,6 +79,8 @@ void ParseCommandLine(int argc, char** argv, ImageShift::Options& options) {
     }
     if(left_image.rows > 400) {
         cv::resize(left_image, options.left_image, cv::Size(), 400.0 / left_image.rows, 400.0 / left_image.rows);
+    } else {
+        options.left_image = std::move(left_image);
     }
     
     const auto right_image = cv::imread(args.right_image_path, cv::IMREAD_COLOR);
@@ -78,6 +89,8 @@ void ParseCommandLine(int argc, char** argv, ImageShift::Options& options) {
     }
     if(right_image.rows > 400) {
         cv::resize(right_image, options.right_image, cv::Size(), 400.0 / right_image.rows, 400.0 / right_image.rows);
+    } else {
+        options.right_image = std::move(right_image);
     }
     
     const auto loss_func = ToLossFunction(args.loss_func);
