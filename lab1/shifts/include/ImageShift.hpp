@@ -9,8 +9,8 @@
 class ImageShift {
 public:
     struct Shift {
-        uint8_t y;
-        uint8_t x;
+        uint8_t y = 0;
+        uint8_t x = 0;
     };
     
     struct Options {
@@ -27,6 +27,7 @@ public:
     ImageShift(const Options& options);
     
     cv::Mat GetShift() const;
+    // cv::Mat FilterDense(const cv::Mat& mat, size_t rad) const;
     
 private:
     struct Node {

@@ -16,7 +16,7 @@ ImageShift::ImageShift(const Options& options)
     , _init_row(kMinShiftY > 0 ? kMinShiftY : 0)
     , _rows(_left_image.rows - std::abs(kMinShiftY))
     , _init_col(kMinShiftX > 0 ? kMinShiftX : 0)
-    , _cols(_left_image.rows - std::abs(kMinShiftX))
+    , _cols(_left_image.cols - std::abs(kMinShiftX))
     , _loss(options.loss)
     , _smoothing_yxyx(GetSmoothing(options.smoothing)) {
     if(_left_image.rows != _right_image.rows ||
@@ -50,7 +50,7 @@ ImageShift::Smoothing ImageShift::GetSmoothing(const std::function<float(Shift, 
 }
     
 cv::Mat ImageShift::GetShift() const {
-    ImageShift::Shifts shifts(_rows, std::vector<Shift>(_cols));
+    ImageShift::Shifts shifts(_left_image.rows, std::vector<Shift>(_left_image.cols));
     std::vector<ImageShift::NodesMap> nodes(_rows, ImageShift::NodesMap(_cols, 
                                             Nodes(kDiffY + 1, 
                                             std::vector<Node>(kDiffX  + 1))));
@@ -68,7 +68,7 @@ cv::Mat ImageShift::GetShift() const {
                 for(size_t j = 1; j < _cols; ++j) {
                     nodes[i][j] = GetNextNodes(nodes[i][j - 1], j, i);
                 }
-                shifts[i] = GetShifts(nodes[i]);
+                shifts[i + _init_row] = GetShifts(nodes[i]);
             }
         });
     }
@@ -126,7 +126,7 @@ ImageShift::Nodes ImageShift::GetNextNodes(const ImageShift::Nodes& prev,
 
 std::vector<ImageShift::Shift> ImageShift::GetShifts(const ImageShift::NodesMap& nodes) const {
     const size_t size = _cols;
-    std::vector<Shift> shifts(size);
+    std::vector<Shift> shifts(_left_image.cols);
     const auto& last = nodes.back();
     Shift shift = {0, 0};
     float min_loss = last[0][0].loss;
@@ -139,22 +139,22 @@ std::vector<ImageShift::Shift> ImageShift::GetShifts(const ImageShift::NodesMap&
     }
 
     for(size_t i = 0; i < size; ++i) {
-        shifts[size - 1 - i] = shift;
+        shifts[_init_col + size - 1 - i] = shift;
         shift = nodes[size - 1 - i][shift.y][shift.x].prev;
     }
     return shifts;
 }
 
 cv::Mat ImageShift::ToMat(const ImageShift::Shifts& shifts) const {
-    uint8_t max = 0; 
-    cv::Mat mat(shifts.size(), shifts[0].size(), CV_8U);
+    cv::Mat mat(shifts.size(), shifts[0].size(), CV_8UC3);
     for(size_t i = 0; i < shifts.size(); ++i) {
-        auto iter = mat.ptr<uint8_t>(i);
+        auto iter = mat.ptr<cv::Vec3b>(i);
         for(size_t j = 0; j < shifts[0].size(); ++j) {
             const auto& shift = shifts[i][j];
-            iter[j] = std::sqrt(shift.x * shift.x + shift.y + shift.y);
-            max = std::max(shift.x, max);
+            iter[j][0] = shift.y;
+            iter[j][1] = shift.x;
         }
     }
-    return mat * (256.0 / max);
+    return mat;
 }
+

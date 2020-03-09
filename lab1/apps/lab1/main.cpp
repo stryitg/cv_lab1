@@ -5,7 +5,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include "opencv2/imgproc/imgproc.hpp"
 
-#include "ImageShift.hpp" 
+#include "ImageShift.hpp"
 #include "Common.hpp"
 
 namespace po = boost::program_options;
@@ -77,7 +77,7 @@ void ParseCommandLine(int argc, char** argv, ImageShift::Options& options, std::
     if(!left_image.data) {
         throw std::runtime_error("couldn't open " + args.left_image_path);
     }
-    if(left_image.rows > 400) {
+    if(false && left_image.rows > 400) {
         cv::resize(left_image, options.left_image, cv::Size(), 400.0 / left_image.rows, 400.0 / left_image.rows);
     } else {
         options.left_image = std::move(left_image);
@@ -87,7 +87,7 @@ void ParseCommandLine(int argc, char** argv, ImageShift::Options& options, std::
     if(!right_image.data) {
         throw std::runtime_error("couldn't open " + args.left_image_path);
     }
-    if(right_image.rows > 400) {
+    if(false && right_image.rows > 400) {
         cv::resize(right_image, options.right_image, cv::Size(), 400.0 / right_image.rows, 400.0 / right_image.rows);
     } else {
         options.right_image = std::move(right_image);
