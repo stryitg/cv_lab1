@@ -85,7 +85,7 @@ void ParseCommandLine(int argc, char** argv, ImageShift::Options& options, std::
     
     const auto right_image = cv::imread(args.right_image_path, cv::IMREAD_COLOR);
     if(!right_image.data) {
-        throw std::runtime_error("couldn't open " + args.left_image_path);
+        throw std::runtime_error("couldn't open " + args.right_image_path);
     }
     if(false && right_image.rows > 400) {
         cv::resize(right_image, options.right_image, cv::Size(), 400.0 / right_image.rows, 400.0 / right_image.rows);

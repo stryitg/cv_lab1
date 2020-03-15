@@ -103,14 +103,11 @@ void Display(cv::Mat left_image, cv::Mat right_image,
     const auto epipole = FundamentalMatrix::GetEpipole(fm);
     for(const auto& pt: pts) {
         const auto line_ = GetLine(pt, epipole);
-        std::cout << line_.begin << std::endl;
-        std::cout << line_.end << std::endl;
         line(left_image, line_.begin, line_.end,
              cv::Scalar(0, 0, 0), thickness, line_type);
         Eigen::Vector3d v;
         v << pt.x, pt.y, 1.0;
         const auto r_line = fm * v;
-        std::cout << (( r_line[2] + 1000 * r_line[0]) / r_line[1]) << std::endl;
         const cv::Point begin{2000, - (int) (( r_line[2] + 2000 * r_line[0]) / r_line[1])}; 
         const cv::Point end{0, - (int) ((r_line[2]) / r_line[1])};
         line(right_image, begin, end,
