@@ -19,10 +19,11 @@ std::vector<FundamentalMatrix::Match> FundamentalMatrix::ToMatches(
         for(size_t j = 0; j < left_image.cols; ++j) {
             if(IsDense(shifts, i, j)) {
                 const auto& shift = shifts.at<cv::Vec3b>(i, j);
-                const auto i_f = static_cast<double>(i);
-                const auto j_f = static_cast<double>(j);
-                matches.push_back({{j_f, i_f, 1.0}, 
-                                  {j_f - shift[1], i_f - shift[0], 1.0}});
+                const auto i_d = static_cast<double>(i);
+                const auto j_d = static_cast<double>(j);
+                matches.push_back({{j_d, i_d, 1.0}, 
+                                  {j_d - (shift[1] + internal.min_shift_x), 
+                                   i_d - (shift[0] + internal.min_shift_y), 1.0}});
             }
         }
     }
@@ -32,7 +33,8 @@ std::vector<FundamentalMatrix::Match> FundamentalMatrix::ToMatches(
 
 bool FundamentalMatrix::IsDense(const cv::Mat& shifts, size_t i, size_t j) {
     const auto& shift = shifts.at<cv::Vec3b>(i, j);
-    bool is_dense = (j > 1) && (j < shifts.cols - 2) && (i > 1) && (i < shifts.rows - 2)
+    bool is_dense = (j > 1) && (j < shifts.cols - 2)
+                  && (i > 1) && (i < shifts.rows - 2)
                   && (shift[0] != 0 || shift[1] != 0);
     for(size_t k = -2; k <= 2; ++k) {
         for(size_t m = -2; m <= 2; ++m) {
@@ -125,10 +127,10 @@ Eigen::MatrixXd FundamentalMatrix::GetKernel(
 
 std::array<Eigen::Matrix3d, 2> FundamentalMatrix::ToEqMatrices(
             const Eigen::MatrixXd& kernel) const {
-    const auto& r1 = kernel.col(0);
-    const auto& r2 = kernel.col(1);
-    const auto a = Eigen::Map<const Eigen::Matrix3d>(r1.data());
-    const auto b = Eigen::Map<const Eigen::Matrix3d>(r2.data());
+    const auto& c1 = kernel.col(0);
+    const auto& c2 = kernel.col(1);
+    const auto a = Eigen::Map<const Eigen::Matrix3d>(c1.data());
+    const auto b = Eigen::Map<const Eigen::Matrix3d>(c2.data());
     return {a, b};
 }
 
@@ -186,6 +188,7 @@ Eigen::Vector3d FundamentalMatrix::GetEpipole(const Eigen::Matrix3d& fm) {
     if(std::abs(epipole(2)) > 0.00001) {
         return epipole / epipole(2);
     } else {
+        std::cout << epipole << std::endl;
         return epipole * 1000000;
     }
 }

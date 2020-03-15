@@ -18,6 +18,8 @@ public:
         cv::Mat left_image;
         cv::Mat right_image;
         cv::Mat shifts;
+        int32_t min_shift_x;
+        int32_t min_shift_y;
     };
     
     struct Match {

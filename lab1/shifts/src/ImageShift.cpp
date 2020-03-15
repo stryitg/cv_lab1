@@ -147,6 +147,7 @@ std::vector<ImageShift::Shift> ImageShift::GetShifts(const ImageShift::NodesMap&
 
 cv::Mat ImageShift::ToMat(const ImageShift::Shifts& shifts) const {
     cv::Mat mat(shifts.size(), shifts[0].size(), CV_8UC3);
+    mat = cv::Scalar(0, 0, 0);
     for(size_t i = 0; i < shifts.size(); ++i) {
         auto iter = mat.ptr<cv::Vec3b>(i);
         for(size_t j = 0; j < shifts[0].size(); ++j) {
