@@ -37,6 +37,7 @@ int main(int argc, char** argv) {
     ParseCommandLine(argc, argv, internal);
     FundamentalMatrix fm(internal);
     const auto f = fm.Get();
+        
     ImgShape shp{.height = static_cast<size_t>(internal.left_image.rows),
                  .width = static_cast<size_t>(internal.left_image.cols) };
     const auto matches = fm.GetMatches();

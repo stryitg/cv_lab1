@@ -2,6 +2,7 @@
 #include <iostream>
 #include <Eigen/LU>
 #include <Eigen/Dense>
+#include <cmath>
 
 #include "Rectification.hpp"
 
@@ -20,9 +21,10 @@ Eigen::Matrix3d GetRightRectification(const Eigen::Matrix3d& fm,
     const auto shift = GetShiftMatrix(shp);
     const auto rotation = GetRotationMatrix(fm, shift);
     const auto affine = rotation * shift;
+    std::cout << affine << std::endl;
     const auto projection = GetProjectionMatrix(fm, affine);
     const auto inv_shift = GetInvShift(shp);
-    return inv_shift * projection * affine;
+    return /*inv_shift */ projection * affine;
 }
 
 Eigen::Matrix3d GetShiftMatrix(const ImgShape& shp) {
@@ -35,8 +37,8 @@ Eigen::Matrix3d GetInvShift(const ImgShape& shp) {
 
 Eigen::Matrix3d GetGeneralShiftMatrix(const ImgShape& shp, int sign) {
     Eigen::Matrix3d m;
-    m << 1, 0, /*sign * shp.height / 2.0*/ 0, // works better this way
-         0, 1, /*sign * shp.width / 2.0*/ 0,
+    m << 1, 0, sign * (shp.width / 2.0), // works better this way
+         0, 1, sign * (shp.height / 2.0),
          0, 0, 1;
     return m;
 }
@@ -44,14 +46,16 @@ Eigen::Matrix3d GetGeneralShiftMatrix(const ImgShape& shp, int sign) {
 Eigen::Matrix3d GetRotationMatrix(const Eigen::Matrix3d& fm,
                                   const Eigen::Matrix3d& shift) {
     const auto ep = shift * GetRightEpipole(fm);
-    const double tg = ep(1) / ep(0);
-    const double sin = -tg / std::sqrt(1 + tg * tg);
-    const double cos = 1 / std::sqrt(1 + tg * tg);
+    const double phi = atan2(ep(1), ep(0));
+    const double sin = std::sin(phi);
+    const double cos = std::cos(phi);
+    const int sign = cos >= 0 ? 1 : -1;
     
     Eigen::Matrix3d m;
-    m << cos,  sin, 0,
-         -sin, cos, 0,
-         0,    0,   1;
+    m << cos, sin, 0,
+        -sin, cos, 0,
+         0,   0,  sign;
+    m *= sign;
     return m;
 }
 
