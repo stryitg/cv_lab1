@@ -9,6 +9,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_subdirectory(shifts)
 add_subdirectory(fundamental_matrix)
+add_subdirectory(rect)
 add_subdirectory(apps)
 
 # add_executable(lab1 ${SOUCES})

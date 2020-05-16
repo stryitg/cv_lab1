@@ -30,7 +30,9 @@ public:
     
     FundamentalMatrix(const MatchesInternal& internal);
     Eigen::Matrix3d Get() const;
+    std::vector<Match> GetMatches() const { return _matches; }
     static Eigen::Vector3d GetEpipole(const Eigen::Matrix3d& fm);
+
     
 private:
     std::vector<Match> ToMatches(const MatchesInternal& internal) const;
