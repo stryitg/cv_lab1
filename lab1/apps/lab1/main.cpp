@@ -32,7 +32,10 @@ int main(int argc, char** argv) {
         cv::imshow("Display window", shift_map);
         cv::waitKey(0);
         if(!out_path.empty()) {
-            cv::imwrite(out_path, shift_map);
+            std::vector<int> compression_params;
+            compression_params.push_back(cv::IMWRITE_PNG_COMPRESSION);
+            compression_params.push_back(0);
+            cv::imwrite(out_path, shift_map, compression_params);
         }
     } catch (const std::exception& ex) {
         std::cout << ex.what() << std::endl;

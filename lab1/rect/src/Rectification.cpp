@@ -11,9 +11,9 @@ Rectification GetRectification(const Eigen::Matrix3d& fm, const ImgShape& shp,
     const auto right = GetRightRectification(fm, shp);
     const auto epipole = GetRightEpipole(fm);
     const auto left = GetLeftRectification(fm, right, matches);
-    const Eigen::FullPivLU<Eigen::Matrix3d> lu(fm);
-    const auto epx = lu.kernel();
-    return Rectification{.left = std::move(left), .right = std::move(right)};
+    const auto inv_shift = GetInvShift(shp);
+    return Rectification{.left = inv_shift * left,
+                         .right = inv_shift * right};
 }
 
 Eigen::Matrix3d GetRightRectification(const Eigen::Matrix3d& fm, 
@@ -21,10 +21,8 @@ Eigen::Matrix3d GetRightRectification(const Eigen::Matrix3d& fm,
     const auto shift = GetShiftMatrix(shp);
     const auto rotation = GetRotationMatrix(fm, shift);
     const auto affine = rotation * shift;
-    std::cout << affine << std::endl;
     const auto projection = GetProjectionMatrix(fm, affine);
-    const auto inv_shift = GetInvShift(shp);
-    return /*inv_shift */ projection * affine;
+    return projection * affine;
 }
 
 Eigen::Matrix3d GetShiftMatrix(const ImgShape& shp) {
@@ -37,8 +35,8 @@ Eigen::Matrix3d GetInvShift(const ImgShape& shp) {
 
 Eigen::Matrix3d GetGeneralShiftMatrix(const ImgShape& shp, int sign) {
     Eigen::Matrix3d m;
-    m << 1, 0, sign * (shp.width / 2.0), // works better this way
-         0, 1, sign * (shp.height / 2.0),
+    m << 1, 0, sign * (shp.height / 2.0),
+         0, 1, sign * (shp.width / 2.0),
          0, 0, 1;
     return m;
 }
